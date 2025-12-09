@@ -1,95 +1,190 @@
 <!doctype html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>تحويل صورة إلى رابط PNG</title>
-<style>
-  body { font-family: Arial; direction: rtl; padding: 20px; }
-  .box { max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
-  .result { margin-top: 15px; word-break: break-all; }
-  img { max-width: 100%; margin-top: 10px; display: none; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>موقع أسود - قائمة عائمة فارغة</title>
+  <style>
+    :root{
+      --bg:#000000;
+      --panel-bg: rgba(255,255,255,0.03);
+      --glass: rgba(255,255,255,0.04);
+      --accent: rgba(255,255,255,0.06);
+      --radius: 14px;
+    }
+    /* Reset */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body,#app{height:100%}
+    body{
+      background:var(--bg);
+      color:#fff;
+      font-family: Inter, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow:hidden; /* full-bleed black site */
+    }
+
+    /* Main layout */
+    #app{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      width:100vw;
+      padding:32px;
+    }
+
+    .hero{
+      text-align:center;
+      max-width:900px;
+      width:100%;
+    }
+
+    .logo{
+      font-weight:700;
+      font-size:20px;
+      letter-spacing:0.06em;
+      opacity:0.9;
+    }
+
+    .desc{
+      margin-top:12px;
+      color:rgba(255,255,255,0.65);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    /* Floating menu button */
+    .menu-btn{
+      position:fixed;
+      top:24px;
+      left:24px; /* rtl: left side */
+      width:64px;
+      height:64px;
+      border-radius:16px;
+      background:var(--glass);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      backdrop-filter: blur(6px) saturate(1.1);
+      -webkit-backdrop-filter: blur(6px) saturate(1.1);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+      transition:transform .18s ease, background .18s ease;
+      z-index:50;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .menu-btn:active{transform:scale(.98)}
+
+    /* Floating empty menu panel */
+    .floating-menu{
+      position:fixed;
+      top:100px;
+      left:24px; /* align with button */
+      width:300px;
+      min-height:120px;
+      max-height:70vh;
+      border-radius:var(--radius);
+      background:var(--panel-bg);
+      padding:16px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.8);
+      overflow:auto;
+      border:1px solid rgba(255,255,255,0.03);
+      z-index:40;
+      transform-origin:top left;
+      transition:opacity .18s ease, transform .18s ease, visibility .18s;
+      visibility:hidden;
+      opacity:0;
+      backdrop-filter: blur(8px) saturate(1.1);
+    }
+
+    .floating-menu.open{
+      visibility:visible;
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+
+    /* Empty state styles */
+    .empty-state{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:20px 12px;
+      gap:10px;
+      color:rgba(255,255,255,0.45);
+      font-size:13px;
+    }
+
+    .empty-dot{
+      width:10px;height:10px;border-radius:99px;background:var(--accent);
+      opacity:0.8;
+    }
+
+    /* small screen adjustments */
+    @media (max-width:520px){
+      .floating-menu{left:12px;right:12px;width:auto;top:84px}
+      .menu-btn{left:12px}
+    }
+
+  </style>
 </head>
-
 <body>
-<div class="box">
-  <h2>تحويل صورة إلى رابط PNG مباشر</h2>
-  <input type="file" id="fileInput" accept="image/*" />
-  <button onclick="convertAndUpload()">رفع وتحويل</button>
+  <div id="app">
+    <div class="hero">
+      <div class="logo">موقع بخلفية سوداء</div>
+      <p class="desc">هذه صفحة جاهزة بخلفية سوداء وقائمة عائمة فارغة. افتح القائمة العائمة عبر زر القائمة أعلى اليمين (في العرض RTL تظهر على اليسار).</p>
+    </div>
+  </div>
 
-  <div class="result" id="result"></div>
-  <img id="preview" />
-</div>
+  <!-- زر القائمة العائمة -->
+  <button class="menu-btn" id="menuBtn" aria-label="فتح القائمة العائمة">
+    <!-- simple hamburger icon -->
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <rect x="3" y="5" width="18" height="2" rx="1" fill="white" opacity="0.85" />
+      <rect x="3" y="11" width="18" height="2" rx="1" fill="white" opacity="0.6" />
+      <rect x="3" y="17" width="18" height="2" rx="1" fill="white" opacity="0.4" />
+    </svg>
+  </button>
 
-<script>
-async function convertAndUpload() {
-  const file = document.getElementById("fileInput").files[0];
-  if (!file) return alert("اختر صورة أولاً");
+  <!-- اللوحة الفارغة (القائمة) -->
+  <aside class="floating-menu" id="floatingMenu" aria-hidden="true">
+    <div class="empty-state" role="status">
+      <div class="empty-dot" aria-hidden></div>
+      <div>القائمة فارغة</div>
+      <div style="font-size:12px;opacity:.6">أضف عناصر هنا حسب ما تريد</div>
+    </div>
+  </aside>
 
-  // تحويل الصورة إلى PNG عبر Canvas
-  const pngBlob = await convertToPng(file);
-  const base64 = await blobToBase64(pngBlob);
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const floatingMenu = document.getElementById('floatingMenu');
 
-  document.getElementById("result").innerHTML = "جاري الرفع...";
+    function toggleMenu(){
+      const open = floatingMenu.classList.toggle('open');
+      floatingMenu.setAttribute('aria-hidden', !open);
+      menuBtn.setAttribute('aria-pressed', open);
+    }
 
-  // رفع إلى ImgBB
-  const apiKey = "YOUR_API_KEY"; // ضع مفتاحك هنا
-  const formData = new FormData();
-  formData.append("image", base64.split(",")[1]);
+    menuBtn.addEventListener('click', toggleMenu);
 
-  const upload = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-    method: "POST",
-    body: formData
-  });
+    // close when clicking outside
+    document.addEventListener('click', (e)=>{
+      if(!floatingMenu.contains(e.target) && !menuBtn.contains(e.target)){
+        floatingMenu.classList.remove('open');
+        floatingMenu.setAttribute('aria-hidden', true);
+        menuBtn.setAttribute('aria-pressed', false);
+      }
+    });
 
-  const data = await upload.json();
-
-  if (data.success) {
-    const url = data.data.url;
-    document.getElementById("result").innerHTML =
-      `<strong>تم بنجاح:</strong><br><a href="${url}" target="_blank">${url}</a>`;
-      
-    const img = document.getElementById("preview");
-    img.src = url;
-    img.style.display = "block";
-  } else {
-    document.getElementById("result").innerHTML = "فشل الرفع!";
-  }
-}
-
-// تحويل لأي صورة إلى PNG عبر Canvas
-function convertToPng(file) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-
-        canvas.toBlob((blob) => resolve(blob), "image/png", 1.0);
-      };
-      img.src = reader.result;
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
-
-// تحويل blob إلى base64
-function blobToBase64(blob) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(blob);
-  });
-}
-</script>
-
+    // keyboard accessibility: esc to close
+    document.addEventListener('keydown',(e)=>{
+      if(e.key === 'Escape'){
+        floatingMenu.classList.remove('open');
+        floatingMenu.setAttribute('aria-hidden', true);
+        menuBtn.setAttribute('aria-pressed', false);
+      }
+    })
+  </script>
 </body>
 </html>
