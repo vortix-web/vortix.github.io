@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>رفع صورة → رابط PNG</title>
+  <style>
+    body { font-family: system-ui, Arial; padding: 32px; direction: rtl; }
+    .card { max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.03); }
+    input[type="file"] { display:block; margin-bottom: 12px; }
+    button { padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; }
+    .result { margin-top: 16px; word-break: break-all; }
+    .preview { max-width: 100%; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>حوّل صورة إلى رابط PNG مباشر</h2>
+    <p>اختر صورة وسيتم تحويلها إلى PNG وإعطاؤك رابط مباشر.</p>
+
+    <input id="fileInput" type="file" accept="image/*" />
+    <button id="uploadBtn">رفع وتحويل</button>
+
+    <div class="result" id="result"></div>
+
+    <img id="preview" class="preview" alt="" hidden />
+
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const result = document.getElementById('result');
+    const preview = document.getElementById('preview');
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('اختر ملفًا أولاً');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('image', file);
+
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = 'جاري الرفع...';
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: fd
+        });
+        const data = await res.json();
+        if (res.ok) {
+          result.innerHTML = `<div>تم بنجاح! الرابط: <a href="${data.url}" target="_blank">${data.url}</a></div>
+                              <div style="margin-top:8px"><button onclick="copyText('${data.url}')">نسخ الرابط</button></div>`;
+          preview.src = data.url;
+          preview.hidden = false;
+        } else {
+          result.textContent = data.error || 'فشل التحويل';
+        }
+      } catch (err) {
+        console.error(err);
+        result.textContent = 'حدث خطأ أثناء الاتصال بالخادم';
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'رفع وتحويل';
+      }
+    });
+
+    function copyText(text) {
+      navigator.clipboard?.writeText(text).then(() => {
+        alert('تم نسخ الرابط');
+      }).catch(() => {
+        prompt('انسخ الرابط يدوياً:', text);
+      });
+    }
+  </script>
+</body>
+</html>
