@@ -1,17 +1,1 @@
-{
-  "name": "image-to-png",
-  "version": "1.0.0",
-  "description": "Upload an image and get a direct .png link",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "multer": "^1.4.5-lts.1",
-    "sharp": "^0.32.0",
-    "uuid": "^9.0.0",
-    "mime-types": "^2.1.35"
-  }
-}
+
